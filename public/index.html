@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件快传 - 快速安全的文件分享</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="glass">
+            <!-- 头部 -->
+            <header class="header">
+                <div class="header-content">
+                    <div class="header-logo">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1>文件快传</h1>
+                        <p>快速、安全、便捷的文件分享服务</p>
+                    </div>
+                </div>
+            </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 上传区域 -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>拖拽文件到此处或点击选择文件</h3>
+                    <p>支持图片、文档、视频、音频等多种格式</p>
+                    <p class="file-limit">最大文件大小：100MB，可同时选择多个文件</p>
+                    <input type="file" id="fileInput" multiple accept="*/*" style="display: none;">
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-plus"></i>
+                        选择文件
+                    </button>
+                </div>
+                
+                
+                <!-- 上传进度 -->
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">上传中...</p>
+                </div>
+            </section>
+
+            <!-- 上传结果 -->
+            <section class="result-section" id="resultSection" style="display: none;">
+                <div class="result-card">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>文件上传成功！</h3>
+                    
+                    <div class="file-info">
+                        <h4>上传文件列表</h4>
+                        <div class="uploaded-files-list" id="uploadedFilesList">
+                            <!-- 动态生成已上传文件列表 -->
+                        </div>
+                        <div class="upload-summary">
+                            <div class="summary-item">
+                                <span class="label">总文件数：</span>
+                                <span class="value" id="totalFiles">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">总大小：</span>
+                                <span class="value" id="totalSize">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">过期时间：</span>
+                                <span class="value" id="expireTime">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-info">
+                        <div class="access-code">
+                            <label>验证码：</label>
+                            <div class="code-container">
+                                <input type="text" id="accessCode" readonly>
+                                <button class="copy-btn" onclick="copyToClipboard('accessCode')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-url">
+                        <label>分享链接：</label>
+                        <div class="url-container">
+                            <input type="text" id="shareUrl" readonly>
+                            <button class="copy-btn" onclick="copyToClipboard('shareUrl')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="copyShareInfo()">
+                            <i class="fas fa-share"></i>
+                            复制分享信息
+                        </button>
+                        <button class="btn btn-secondary" onclick="uploadAnother()">
+                            <i class="fas fa-plus"></i>
+                            上传新文件
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+             <!-- 文件列表区域 -->
+             <section class="file-list-section" id="fileListSection" style="display: none;">
+                 <div class="file-list-card">
+                     <h3><i class="fas fa-list"></i> 已选择的文件</h3>
+                     <p>管理您选择的文件，确认后开始上传</p>
+                     
+                     <div class="selected-files-list" id="mainSelectedFilesList">
+                         <!-- 动态生成已选择的文件列表 -->
+                     </div>
+                     
+                 </div>
+             </section>
+
+             <!-- 下载区域 -->
+             <section class="download-section" id="downloadSection">
+                 <div class="download-card">
+                     <h3><i class="fas fa-download"></i> 下载文件</h3>
+                     <p>输入分享码和验证码来下载文件</p>
+                     
+                     <form id="downloadForm">
+                         <div class="form-group">
+                             <label for="downloadShareCode">分享码：</label>
+                             <input type="text" id="downloadShareCode" placeholder="请输入分享码" required>
+                         </div>
+                         
+                         <div class="form-group">
+                             <label for="downloadAccessCode">验证码：</label>
+                             <input type="text" id="downloadAccessCode" placeholder="请输入验证码" required>
+                         </div>
+                         
+                         <button type="submit" class="btn btn-primary">
+                             <i class="fas fa-download"></i>
+                             获取文件信息
+                         </button>
+                     </form>
+
+                     <!-- 文件信息显示 -->
+                     <div class="file-preview" id="filePreview" style="display: none;">
+                         <div class="preview-content">
+                             <div class="file-icon">
+                                 <i class="fas fa-file"></i>
+                             </div>
+                             <div class="file-details">
+                                 <h4 id="previewFileName"></h4>
+                                 <p id="previewFileSize"></p>
+                                 <p id="previewFileType"></p>
+                             </div>
+                         </div>
+                         <button class="btn btn-success" onclick="downloadFile()">
+                             <i class="fas fa-download"></i>
+                             下载文件
+                         </button>
+                     </div>
+                 </div>
+             </section>
+        </main>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>&copy; 2024 文件快传服务. 所有文件将在7天后自动删除.</p>
+    </footer>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMessage">操作成功</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

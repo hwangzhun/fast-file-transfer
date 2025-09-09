@@ -1,0 +1,31 @@
+{
+  "name": "fast-file-transfer",
+  "version": "1.0.0",
+  "description": "快速文件传输系统",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "init-db": "node scripts/init-db.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "cos-nodejs-sdk-v5": "^2.12.2",
+    "dotenv": "^16.3.1",
+    "express-rate-limit": "^7.1.5",
+    "jsonwebtoken": "^9.0.2",
+    "ali-oss": "^6.18.1",
+    "aws-sdk": "^2.1490.0",
+    "qiniu": "^7.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["file-transfer", "file-sharing", "express", "sqlite"],
+  "author": "Your Name",
+  "license": "MIT"
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>咖啡名片编辑器</title>
+    <link rel="icon" type="image/png" href="icon.svg">
+    <link rel="shortcut icon" type="image/png" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="glass">
+            <header>
+                <div class="header-content">
+                    <img src="icon.svg" alt="咖啡名片编辑器" class="header-logo">
+                    <div class="header-text">
+                        <h1>咖啡名片编辑器</h1>
+                        <p>分步式操作，轻松制作咖啡名片</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 进度指示器 -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">选择名片</div>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">选择数量</div>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">输入文本</div>
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">预览下载</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+            <!-- 第一页：选择图片 -->
+            <div class="page active" id="page1">
+                <div class="page-header">
+                    <h2>第一步：选择咖啡名片</h2>
+                    <p>从以下图片中选择您需要处理的咖啡名片</p>
+                </div>
+                
+                <div class="image-selection-container">
+                    <div class="image-grid" id="imageGrid">
+                        <p class="loading-text">正在加载咖啡名片...</p>
+                    </div>
+                </div>
+                
+                <div class="page-actions">
+                    <button id="nextToStep2" class="btn btn-primary" disabled>下一步：选择数量</button>
+                </div>
+            </div>
+
+            <!-- 第二页：选择数量 -->
+            <div class="page" id="page2">
+                <div class="page-header">
+                    <h2>第二步：选择数量</h2>
+                    <p>选择每张咖啡名片需要制作的数量</p>
+                </div>
+                
+                <div class="quantity-selection-container">
+                    <div class="selected-images-list" id="selectedImagesList">
+                        <!-- 动态生成选中的图片列表，每张图片单独设置数量 -->
+                    </div>
+                    
+                    <div class="total-summary">
+                        <p class="total-hint">总数量：<span id="totalQuantity">0</span> 张</p>
+                    </div>
+                </div>
+                
+                <div class="page-actions">
+                    <button id="prevToStep1" class="btn btn-secondary">上一步</button>
+                    <button id="nextToStep3" class="btn btn-primary">下一步：输入文本</button>
+                </div>
+            </div>
+
+            <!-- 第三页：输入文本和预览 -->
+            <div class="page" id="page3">
+                <div class="page-header">
+                    <h2>第三步：输入文本</h2>
+                    <p>输入要添加的文字内容，并预览效果</p>
+                </div>
+                
+                <div class="text-input-section">
+                    <div class="setting-mode-selector">
+                        <h3>设定模式</h3>
+                        <div class="mode-options">
+                            <label class="mode-option">
+                                <input type="radio" name="settingMode" value="global" checked>
+                                <span class="mode-label">全局设定</span>
+                                <span class="mode-desc">所有图片使用相同的烘焙日期和重量</span>
+                            </label>
+                            <label class="mode-option">
+                                <input type="radio" name="settingMode" value="individual">
+                                <span class="mode-label">单独设定</span>
+                                <span class="mode-desc">每张图片可以设置不同的烘焙日期和重量</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="global-settings" id="globalSettings">
+                        <h3>全局设定</h3>
+                        <div class="text-input-container">
+                            <label for="globalBakingDate">烘焙日期：</label>
+                            <input type="date" id="globalBakingDate" value="">
+                            <!-- <p class="text-hint">实际添加的文字格式：烘焙日期：+年月日<br>位置（X: 35.6px, Y: 793.91px）<br>字体：OPPO Sans 4.0 Regular，大小：21px，颜色：#7f463a，间距：0</p> -->
+                        </div>
+                        
+                        <div class="text-input-container">
+                            <label for="globalWeight">重量：</label>
+                            <div class="weight-input-wrapper">
+                                <input type="number" id="globalWeight" placeholder="请输入重量" value="" min="0" step="0.1">
+                                <span class="weight-unit">g</span>
+                            </div>
+                            <!-- <p class="text-hint">重量将添加在固定位置（X: 527px, Y: 485px）<br>字体：OPPO Sans 4.0 Regular，大小：31.25px，颜色：#000000，间距：0</p> -->
+                        </div>
+                    </div>
+                    
+                    <div class="individual-settings" id="individualSettings" style="display: none;">
+                        <h3>单独设定</h3>
+                        <div class="individual-images-list" id="individualImagesList">
+                            <!-- 动态生成每张图片的单独设定 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <div class="preview-controls">
+                        <h3>预览效果</h3>
+                        <div class="preview-actions">
+                            <button id="updatePreview" class="btn btn-secondary">更新预览</button>
+                            <div class="preview-info">
+                                <span id="previewImageInfo">请选择图片预览</span>
+                                <span id="previewQuantityInfo"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-images-grid" id="previewImagesGrid">
+                        <!-- 动态生成所有选中图片的预览 -->
+                    </div>
+                </div>
+                
+                <div class="page-actions">
+                    <button id="prevToStep2" class="btn btn-secondary">上一步</button>
+                    <button id="nextToStep4" class="btn btn-primary" disabled>下一步：导出PDF</button>
+                </div>
+            </div>
+
+            <!-- 第四页：预览PDF和下载 -->
+            <div class="page" id="page4">
+                <div class="page-header">
+                    <h2>第四步：导出PDF</h2>
+                    <p>生成并下载PDF文件</p>
+                </div>
+                
+                <div>
+                    <div class="pdf-info">
+                        <div class="info-item">
+                            <span class="info-label">选中图片：</span>
+                            <span id="pdfImageCount">0</span> 张
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">总数量：</span>
+                            <span id="pdfTotalQuantity">0</span> 张
+                        </div>
+                        <div class="info-item-full">
+                            <span class="info-label">咖啡详情：</span>
+                            <div class="coffee-details" id="pdfCoffeeDetails">
+                                <table class="coffee-table">
+                                    <thead>
+                                        <tr>
+                                            <th>咖啡名称</th>
+                                            <th>重量</th>
+                                            <th>烘焙日期</th>
+                                            <th>张数</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="coffeeTableBody">
+                                        <tr>
+                                            <td colspan="4" class="no-data">请先生成PDF查看详情</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pdf-actions">
+                        <button id="generatePdf" class="btn btn-success">生成PDF</button>
+                        <button id="downloadPdf" class="btn btn-primary" disabled>下载PDF</button>
+                    </div>
+                </div>
+                
+                
+                <div class="page-actions">
+                    <button id="prevToStep3" class="btn btn-secondary">上一步</button>
+                    <button id="restartProcess" class="btn btn-secondary">重新开始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- 版权声明 -->
+    <footer class="copyright">
+        <p>&#x00AE; 2024 记忆点 | imprint . Designed & Developed by Hwangzhun.</p>
+    </footer>
+
+    <footer class="copyright-mobile">
+        <p>&#x00AE; 2024 记忆点 | imprint . Designed & Developed by Hwangzhun.</p>
+    </footer>
+
+    <!-- 图片放大预览模态框 -->
+    <div class="modal-overlay" id="imageModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalImageName">图片预览</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="预览图片">
+            </div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>

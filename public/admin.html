@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件快传 - 管理面板</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fas fa-shield-alt"></i>
+                <h2>管理员登录</h2>
+                <p>请输入管理员密码以访问管理面板</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="adminPassword">管理员密码</label>
+                    <div class="password-input">
+                        <input type="password" id="adminPassword" placeholder="请输入管理员密码" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    登录
+                </button>
+            </form>
+            <div class="login-footer">
+                <small>只有授权管理员才能访问此页面</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主管理界面 -->
+    <div class="admin-container" id="adminContainer" style="display: none;">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-cogs"></i>
+                <h2>管理面板</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#files" class="nav-item active" data-section="files">
+                    <i class="fas fa-folder"></i>
+                    文件管理
+                </a>
+                <a href="#stats" class="nav-item" data-section="stats">
+                    <i class="fas fa-chart-bar"></i>
+                    统计信息
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    系统设置
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-danger btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    退出登录
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 头部 -->
+            <header class="header">
+                <h1 id="pageTitle">文件管理</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i>
+                        刷新
+                    </button>
+                    <button class="btn btn-warning" onclick="cleanExpiredFiles()">
+                        <i class="fas fa-trash"></i>
+                        清理过期文件
+                    </button>
+                </div>
+            </header>
+
+            <!-- 文件管理页面 -->
+            <section id="filesSection" class="content-section active">
+                <div class="section-header">
+                    <h3>文件列表</h3>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="搜索文件名...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>大小</th>
+                                <th>类型</th>
+                                <th>上传时间</th>
+                                <th>过期时间</th>
+                                <th>下载次数</th>
+                                <th>分享码</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                            <tr>
+                                <td colspan="8" class="loading-row">
+                                    <div class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        加载中...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button class="btn btn-secondary" onclick="previousPage()" id="prevBtn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                        上一页
+                    </button>
+                    <span class="page-info" id="pageInfo">第 1 页，共 1 页</span>
+                    <button class="btn btn-secondary" onclick="nextPage()" id="nextBtn" disabled>
+                        下一页
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 统计信息页面 -->
+            <section id="statsSection" class="content-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalFiles">0</h3>
+                            <p>总文件数</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalDownloads">0</h3>
+                            <p>总下载次数</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalSize">0 MB</h3>
+                            <p>总存储大小</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="activeFiles">0</h3>
+                            <p>活跃文件</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>最近7天上传趋势</h3>
+                    <canvas id="uploadChart" width="400" height="200"></canvas>
+                </div>
+            </section>
+
+            <!-- 系统设置页面 -->
+            <section id="settingsSection" class="content-section">
+                <div class="settings-form">
+                    <h3>系统配置</h3>
+                    
+                    <div class="form-group">
+                        <label for="uploadLocation">文件存储位置</label>
+                        <select id="uploadLocation" onchange="onUploadLocationChange()">
+                            <option value="local">本地存储</option>
+                            <option value="oss">对象存储(OSS)</option>
+                        </select>
+                        <small class="form-help">选择文件上传后的存储位置</small>
+                    </div>
+                    
+                    <!-- OSS平台选择 -->
+                    <div id="ossPlatformSection" class="oss-platform-section" style="display: none;">
+                        <div class="form-group">
+                            <label for="ossPlatform">OSS平台</label>
+                            <select id="ossPlatform" onchange="onOssPlatformChange()">
+                                <option value="tencent">腾讯云COS</option>
+                                <option value="aliyun">阿里云OSS</option>
+                                <option value="huawei">华为云OBS</option>
+                                <option value="qiniu">七牛云Kodo</option>
+                                <option value="aws">AWS S3</option>
+                            </select>
+                            <small class="form-help">选择要使用的对象存储平台</small>
+                        </div>
+                    </div>
+                    
+                    <div id="ossConfig" class="oss-config" style="display: none;">
+                        <h4 id="ossConfigTitle">OSS配置</h4>
+                        
+                        <!-- 腾讯云COS配置 -->
+                        <div id="tencentConfig" class="platform-config">
+                            <div class="form-group">
+                                <label for="tencentSecretId">Secret ID</label>
+                                <input type="text" id="tencentSecretId" placeholder="请输入腾讯云Secret ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="tencentSecretKey">Secret Key</label>
+                                <input type="password" id="tencentSecretKey" placeholder="请输入腾讯云Secret Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="tencentRegion">地域</label>
+                                <input type="text" id="tencentRegion" placeholder="请输入地域，如：ap-beijing" list="tencentRegions" data-validate="region" data-platform="tencent">
+                                <datalist id="tencentRegions">
+                                    <option value="ap-beijing">北京</option>
+                                    <option value="ap-shanghai">上海</option>
+                                    <option value="ap-guangzhou">广州</option>
+                                    <option value="ap-chengdu">成都</option>
+                                    <option value="ap-chongqing">重庆</option>
+                                    <option value="ap-shenzhen-fsi">深圳金融</option>
+                                    <option value="ap-shanghai-fsi">上海金融</option>
+                                    <option value="ap-beijing-fsi">北京金融</option>
+                                    <option value="ap-hongkong">香港</option>
+                                    <option value="ap-singapore">新加坡</option>
+                                    <option value="ap-mumbai">孟买</option>
+                                    <option value="ap-seoul">首尔</option>
+                                    <option value="ap-tokyo">东京</option>
+                                    <option value="na-siliconvalley">硅谷</option>
+                                    <option value="na-ashburn">弗吉尼亚</option>
+                                    <option value="eu-frankfurt">法兰克福</option>
+                                </datalist>
+                                <small class="form-help">常用地域：ap-beijing(北京), ap-shanghai(上海), ap-guangzhou(广州)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="tencentBucket">存储桶名称</label>
+                                <input type="text" id="tencentBucket" placeholder="请输入存储桶名称">
+                            </div>
+                        </div>
+                        
+                        <!-- 阿里云OSS配置 -->
+                        <div id="aliyunConfig" class="platform-config" style="display: none;">
+                            <div class="form-group">
+                                <label for="aliyunAccessKeyId">Access Key ID</label>
+                                <input type="text" id="aliyunAccessKeyId" placeholder="请输入阿里云Access Key ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="aliyunAccessKeySecret">Access Key Secret</label>
+                                <input type="password" id="aliyunAccessKeySecret" placeholder="请输入阿里云Access Key Secret">
+                            </div>
+                            <div class="form-group">
+                                <label for="aliyunRegion">地域</label>
+                                <input type="text" id="aliyunRegion" placeholder="请输入地域，如：oss-cn-hangzhou" list="aliyunRegions" data-validate="region" data-platform="aliyun">
+                                <datalist id="aliyunRegions">
+                                    <option value="oss-cn-hangzhou">华东1(杭州)</option>
+                                    <option value="oss-cn-shanghai">华东2(上海)</option>
+                                    <option value="oss-cn-qingdao">华北1(青岛)</option>
+                                    <option value="oss-cn-beijing">华北2(北京)</option>
+                                    <option value="oss-cn-zhangjiakou">华北3(张家口)</option>
+                                    <option value="oss-cn-huhehaote">华北5(呼和浩特)</option>
+                                    <option value="oss-cn-wulanchabu">华北6(乌兰察布)</option>
+                                    <option value="oss-cn-shenzhen">华南1(深圳)</option>
+                                    <option value="oss-cn-heyuan">华南2(河源)</option>
+                                    <option value="oss-cn-guangzhou">华南3(广州)</option>
+                                    <option value="oss-cn-chengdu">西南1(成都)</option>
+                                    <option value="oss-cn-hefei">华东1(合肥)</option>
+                                    <option value="oss-cn-nanjing">华东1(南京)</option>
+                                    <option value="oss-cn-fuzhou">华东1(福州)</option>
+                                    <option value="oss-cn-wuhan-lr">华中1(武汉)</option>
+                                    <option value="oss-us-east-1">美国东部1(弗吉尼亚)</option>
+                                    <option value="oss-us-west-1">美国西部1(硅谷)</option>
+                                    <option value="oss-ap-southeast-1">亚太东南1(新加坡)</option>
+                                    <option value="oss-ap-southeast-2">亚太东南2(悉尼)</option>
+                                    <option value="oss-ap-southeast-3">亚太东南3(吉隆坡)</option>
+                                    <option value="oss-ap-southeast-5">亚太东南5(雅加达)</option>
+                                    <option value="oss-ap-southeast-6">亚太东南6(马尼拉)</option>
+                                    <option value="oss-ap-southeast-7">亚太东南7(曼谷)</option>
+                                    <option value="oss-ap-northeast-1">亚太东北1(日本)</option>
+                                    <option value="oss-ap-south-1">亚太南部1(孟买)</option>
+                                    <option value="oss-eu-central-1">欧洲中部1(法兰克福)</option>
+                                    <option value="oss-eu-west-1">欧洲西部1(伦敦)</option>
+                                    <option value="oss-me-east-1">中东东部1(迪拜)</option>
+                                </datalist>
+                                <small class="form-help">常用地域：oss-cn-hangzhou(杭州), oss-cn-shanghai(上海), oss-cn-beijing(北京)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="aliyunBucket">存储桶名称</label>
+                                <input type="text" id="aliyunBucket" placeholder="请输入存储桶名称">
+                            </div>
+                        </div>
+                        
+                        <!-- 华为云OBS配置 -->
+                        <div id="huaweiConfig" class="platform-config" style="display: none;">
+                            <div class="form-group">
+                                <label for="huaweiAccessKey">Access Key</label>
+                                <input type="text" id="huaweiAccessKey" placeholder="请输入华为云Access Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="huaweiSecretKey">Secret Key</label>
+                                <input type="password" id="huaweiSecretKey" placeholder="请输入华为云Secret Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="huaweiRegion">地域</label>
+                                <input type="text" id="huaweiRegion" placeholder="请输入地域，如：cn-north-4" list="huaweiRegions" data-validate="region" data-platform="huawei">
+                                <datalist id="huaweiRegions">
+                                    <option value="cn-north-1">华北-北京一</option>
+                                    <option value="cn-north-4">华北-北京四</option>
+                                    <option value="cn-north-9">华北-乌兰察布一</option>
+                                    <option value="cn-east-2">华东-上海二</option>
+                                    <option value="cn-east-3">华东-上海一</option>
+                                    <option value="cn-south-1">华南-广州</option>
+                                    <option value="cn-south-2">华南-深圳</option>
+                                    <option value="cn-southwest-2">西南-贵阳一</option>
+                                    <option value="ap-southeast-1">亚太-新加坡</option>
+                                    <option value="ap-southeast-2">亚太-曼谷</option>
+                                    <option value="ap-southeast-3">亚太-雅加达</option>
+                                    <option value="af-south-1">非洲-约翰内斯堡</option>
+                                    <option value="la-south-2">拉美-墨西哥城二</option>
+                                    <option value="la-north-2">拉美-圣保罗一</option>
+                                    <option value="na-mexico-1">拉美-墨西哥城一</option>
+                                    <option value="sa-brazil-1">拉美-圣保罗一</option>
+                                    <option value="la-south-1">拉美-圣地亚哥</option>
+                                </datalist>
+                                <small class="form-help">常用地域：cn-north-4(北京), cn-east-3(上海), cn-south-1(广州)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="huaweiBucket">存储桶名称</label>
+                                <input type="text" id="huaweiBucket" placeholder="请输入存储桶名称">
+                            </div>
+                        </div>
+                        
+                        <!-- 七牛云Kodo配置 -->
+                        <div id="qiniuConfig" class="platform-config" style="display: none;">
+                            <div class="form-group">
+                                <label for="qiniuAccessKey">Access Key</label>
+                                <input type="text" id="qiniuAccessKey" placeholder="请输入七牛云Access Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="qiniuSecretKey">Secret Key</label>
+                                <input type="password" id="qiniuSecretKey" placeholder="请输入七牛云Secret Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="qiniuRegion">地域</label>
+                                <input type="text" id="qiniuRegion" placeholder="请输入地域，如：z0" list="qiniuRegions" data-validate="region" data-platform="qiniu">
+                                <datalist id="qiniuRegions">
+                                    <option value="z0">华东</option>
+                                    <option value="z1">华北</option>
+                                    <option value="z2">华南</option>
+                                    <option value="z3">北美</option>
+                                    <option value="z4">东南亚</option>
+                                </datalist>
+                                <small class="form-help">常用地域：z0(华东), z1(华北), z2(华南)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="qiniuBucket">存储桶名称</label>
+                                <input type="text" id="qiniuBucket" placeholder="请输入存储桶名称">
+                            </div>
+                        </div>
+                        
+                        <!-- AWS S3配置 -->
+                        <div id="awsConfig" class="platform-config" style="display: none;">
+                            <div class="form-group">
+                                <label for="awsAccessKeyId">Access Key ID</label>
+                                <input type="text" id="awsAccessKeyId" placeholder="请输入AWS Access Key ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="awsSecretAccessKey">Secret Access Key</label>
+                                <input type="password" id="awsSecretAccessKey" placeholder="请输入AWS Secret Access Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="awsRegion">地域</label>
+                                <select id="awsRegion">
+                                    <option value="us-east-1">美国东部(弗吉尼亚)</option>
+                                    <option value="us-west-2">美国西部(俄勒冈)</option>
+                                    <option value="ap-southeast-1">亚太(新加坡)</option>
+                                    <option value="ap-northeast-1">亚太(东京)</option>
+                                    <option value="eu-west-1">欧洲(爱尔兰)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="awsBucket">存储桶名称</label>
+                                <input type="text" id="awsBucket" placeholder="请输入存储桶名称">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="button" class="btn btn-secondary" onclick="testOssConnection()">
+                                <i class="fas fa-plug"></i>
+                                测试连接
+                            </button>
+                            <span id="ossTestResult" class="test-result"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxFileSize">最大文件大小 (MB)</label>
+                        <input type="number" id="maxFileSize" value="100" min="1" max="1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fileExpireDays">文件过期天数</label>
+                        <input type="number" id="fileExpireDays" value="7" min="1" max="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="uploadLimit">上传频率限制 (次/15分钟)</label>
+                        <input type="number" id="uploadLimit" value="10" min="1" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="downloadLimit">下载频率限制 (次/分钟)</label>
+                        <input type="number" id="downloadLimit" value="20" min="1" max="100">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveSettings()">
+                        <i class="fas fa-save"></i>
+                        保存设置
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 文件详情模态框 -->
+    <div class="modal" id="fileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>文件详情</h3>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="fileModalBody">
+                <!-- 文件详情内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMessage">操作成功</span>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
